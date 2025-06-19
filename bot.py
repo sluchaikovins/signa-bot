@@ -14,7 +14,7 @@ PROMOCODES = {
 
 user_states = {}
 orders = []
-ADMIN_ID = твой_tg_id  # ⚠️ Замени на свой Telegram ID
+ADMIN_ID = 1284710177  # ⚠️ Замени на свой Telegram ID
 
 def generate_unique_code():
     return str(random.randint(1000, 9999))
