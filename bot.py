@@ -8,12 +8,10 @@ API_TOKEN = '8114029445:AAEz00_sHv9VhtfgdT2S3cK6hbJtiJ9dxSM'  # Вставь с�
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-# Промокоды и скидки
 PROMOCODES = {
     'cozyfan': 20  # скидка 20 рублей
 }
 
-# Хранилище состояния пользователей
 user_states = {}
 
 @dp.message_handler(commands=['start'])
@@ -28,6 +26,7 @@ async def cmd_start(message: types.Message):
 
 @dp.callback_query_handler(lambda c: c.data in ['order', 'history', 'help'])
 async def main_menu(callback_query: types.CallbackQuery):
+    await callback_query.message.delete()
     action = callback_query.data
     if action == 'order':
         keyboard = InlineKeyboardMarkup().add(
@@ -38,25 +37,26 @@ async def main_menu(callback_query: types.CallbackQuery):
         await bot.send_message(callback_query.from_user.id, "У тебя пока нет заказов. Закажи первую сигну!")
     elif action == 'help':
         await bot.send_message(callback_query.from_user.id, "Этот бот делает сигны. Нажми 'Заказать сигну' и введи имя.")
-    await bot.answer_callback_query(callback_query.id)
+    await callback_query.answer()
 
 @dp.callback_query_handler(lambda c: c.data == 'from_cozzych')
 async def choose_variant(callback_query: types.CallbackQuery):
+    await callback_query.message.delete()
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(
-        InlineKeyboardButton("🧥 Освящение с одеждой 1 — 100₽", callback_data='style_1'),
-        InlineKeyboardButton("👕 Освящение с одеждой 2 — 120₽", callback_data='style_2')
+        InlineKeyboardButton("🧥 Освещение с одеждой 1 — 100₽", callback_data='style_1'),
+        InlineKeyboardButton("👕 Освещение с одеждой 2 — 120₽", callback_data='style_2')
     )
-    await bot.send_message(callback_query.from_user.id, "Выберите освящение с одеждой 👇", reply_markup=keyboard)
-    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, "Выберите освещение с одеждой 👇", reply_markup=keyboard)
+    await callback_query.answer()
 
 @dp.callback_query_handler(lambda c: c.data.startswith('style_'))
 async def ask_for_text(callback_query: types.CallbackQuery):
+    await callback_query.message.delete()
     user_id = callback_query.from_user.id
     style = callback_query.data
     price = 100 if style == 'style_1' else 120
 
-    # Сохраняем стиль и цену
     user_states[user_id] = {
         'stage': 'waiting_text',
         'style': style,
@@ -69,7 +69,7 @@ async def ask_for_text(callback_query: types.CallbackQuery):
         "При сомнениях обратись в 📞Помощь. В противном случае в выполнении сигны может быть отказано без возврата."
     )
     await bot.send_message(user_id, warning)
-    await bot.answer_callback_query(callback_query.id)
+    await callback_query.answer()
 
 @dp.message_handler(content_types=['text', 'photo'])
 async def handle_text_or_photo(message: types.Message):
@@ -82,11 +82,9 @@ async def handle_text_or_photo(message: types.Message):
     if message.text and len(message.text) > 64:
         return await message.reply("⚠️ Текст слишком длинный! Максимум 64 символа.")
 
-    # Сохраняем текст или факт получения фото
     user_states[user_id]['stage'] = 'promo'
     user_states[user_id]['content'] = message.text if message.text else 'image'
 
-    # Показываем кнопки: ввести промокод или пропустить
     promo_keyboard = InlineKeyboardMarkup(row_width=2)
     promo_keyboard.add(
         InlineKeyboardButton("✅ Ввести промокод", callback_data='enter_promo'),
@@ -96,6 +94,7 @@ async def handle_text_or_photo(message: types.Message):
 
 @dp.callback_query_handler(lambda c: c.data in ['enter_promo', 'skip_promo'])
 async def handle_promo_decision(callback_query: types.CallbackQuery):
+    await callback_query.message.delete()
     user_id = callback_query.from_user.id
     state = user_states.get(user_id)
 
@@ -107,7 +106,7 @@ async def handle_promo_decision(callback_query: types.CallbackQuery):
         await show_final_summary(user_id, final_price)
         await ask_for_payment(user_id, final_price)
 
-    await bot.answer_callback_query(callback_query.id)
+    await callback_query.answer()
 
 @dp.message_handler(lambda msg: user_states.get(msg.from_user.id, {}).get('stage') == 'waiting_promo')
 async def apply_promo(msg: types.Message):
@@ -130,7 +129,7 @@ async def apply_promo(msg: types.Message):
 async def show_final_summary(user_id, final_price):
     content = user_states[user_id].get('content')
     style = user_states[user_id].get('style')
-    style_name = "🧥 Освящение 1" if style == 'style_1' else "👕 Освящение 2"
+    style_name = "🧥 Освещение 1" if style == 'style_1' else "👕 Освещение 2"
 
     await bot.send_message(user_id,
         f"✅ Заказ принят!\n"
@@ -155,11 +154,11 @@ async def ask_for_payment(user_id, amount):
     await bot.send_message(user_id, f"Итоговая стоимость: {amount}₽\n\nПодтвердите оплату:", reply_markup=pay_keyboard)
 
 def generate_unique_code():
-    # Можно улучшить: проверить на уникальность в базе или списке
     return str(random.randint(1000, 9999))
 
 @dp.callback_query_handler(lambda c: c.data == 'pay_now')
 async def send_payment_instructions(callback_query: types.CallbackQuery):
+    await callback_query.message.delete()
     user_id = callback_query.from_user.id
     state = user_states.get(user_id)
 
