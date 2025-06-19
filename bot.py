@@ -96,8 +96,8 @@ async def main_menu(c: types.CallbackQuery):
 async def choose_variant(c: types.CallbackQuery):
     await c.message.delete()
     kb = InlineKeyboardMarkup(row_width=1).add(
-        InlineKeyboardButton("🧥 Освещение 1 — 100₽", callback_data='style_1'),
-        InlineKeyboardButton("👕 Освещение 2 — 120₽", callback_data='style_2')
+        InlineKeyboardButton("Освещение 1 — 100₽", callback_data='style_1'),
+        InlineKeyboardButton("Освещение 2 — 120₽", callback_data='style_2')
     )
     await bot.send_message(c.from_user.id, "Выберите стиль 👇", reply_markup=kb)
     await c.answer()
