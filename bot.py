@@ -20,7 +20,7 @@ async def cmd_start(message: types.Message):
     keyboard.add(
         InlineKeyboardButton("🔹 Заказать сигну", callback_data='order'),
         InlineKeyboardButton("📜 История заказов", callback_data='history'),
-        InlineKeyboardButton("❓ Помощь", callback_data='help')
+        InlineKeyboardButton("📞 Помощь", callback_data='help')
     )
     await message.answer("Кликай кнопочки 👇", reply_markup=keyboard)
 
