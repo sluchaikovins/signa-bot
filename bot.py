@@ -6,9 +6,9 @@ import json
 from aiogram import Bot, Dispatcher, types, executor
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 
-API_TOKEN = '...'  # вставь свой токен
-DONATEPAY_API_KEY = '...'  # вставь свой ключ
-ADMIN_ID = 123456789  # твой Telegram ID
+API_TOKEN = '8114029445:AAEz00_sHv9VhtfgdT2S3cK6hbJtiJ9dxSM'  # вставь свой токен
+DONATEPAY_API_KEY = 'MvZrwKfTVfiFWIIYZVptsNgAXMCWh698NkvLBKzBOiIfLbBZyatrEKV4uYv9'  # вставь свой ключ
+ADMIN_ID = 1284710177  # твой Telegram ID
 
 DATA_FILE = 'orders_data.json'
 
