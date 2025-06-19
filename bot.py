@@ -118,9 +118,8 @@ async def handle_content(m: types.Message):
     st = user_states[uid]
     if m.text and len(m.text) > 64:
         return await m.reply("⚠️ Слишком много символов.")
-    # Сохраняем контент: текст или file_id фото
     if m.photo:
-        photo = m.photo[-1]  # Самое большое фото
+        photo = m.photo[-1]
         st['content'] = {'type': 'photo', 'file_id': photo.file_id}
     else:
         st['content'] = {'type': 'text', 'text': m.text}
@@ -192,7 +191,6 @@ async def ask_payment(uid, amount):
         'stage': 'waiting_payment',
         'paid': False
     })
-    # Добавляем заказ
     username = (await bot.get_chat(uid)).username or uid
     orders.append({
         'user_id': uid,
@@ -207,12 +205,17 @@ async def ask_payment(uid, amount):
     })
     save_data()
 
+    donate_url = f"https://donatepay.ru/checkout/{code}"
+
     kb = InlineKeyboardMarkup().add(
         InlineKeyboardButton("✅ Готово", callback_data='confirm_manual')
     )
-    await bot.send_message(uid,
-                           f"💸 Оплатите {amount}₽ на DonatePay\nКомментарий: {code}\n⏳ 10 мин",
-                           reply_markup=kb)
+    text = (
+        f"💸 Оплатите {amount}₽ на "
+        f'<a href="{donate_url}">DonatePay</a>\n'
+        f"Комментарий: {code}\n⏳ 10 мин"
+    )
+    await bot.send_message(uid, text, reply_markup=kb, parse_mode='HTML')
 
 @dp.callback_query_handler(lambda c: c.data == 'confirm_manual')
 async def manual_confirm(c: types.CallbackQuery):
@@ -235,7 +238,6 @@ async def check_all_payments():
         for o in orders:
             uid = o['user_id']
             st = user_states.get(uid, {})
-            # Проверка оплаты для неоплаченных заказов
             if (not o['paid'] and
                 o['code'] in com and
                 amt >= o['price'] and
@@ -245,7 +247,6 @@ async def check_all_payments():
                 st['stage'] = 'paid'
                 save_data()
                 await bot.send_message(uid, "✅ Оплата получена! В ближайшее время отправлю сигну.")
-                # Уведомим админа
                 await bot.send_message(ADMIN_ID, f"⚡ Заказ #{orders.index(o)+1} оплачен пользователем @{o['username']}.")
                 break
 
@@ -332,10 +333,6 @@ async def admin_cancel_order(c: types.CallbackQuery):
 
 # --- Отправка сигн пользователю от имени бота ---
 
-# Шаг 1: админ выбирает заказ и жмет "Отправить сигну"
-# Шаг 2: бот спрашивает текст сигны (или фото)
-# Шаг 3: отправляем сигну юзеру
-
 sending_signs = {}  # user_id -> order_idx
 
 @dp.callback_query_handler(lambda c: c.data.startswith('admin_send_'))
@@ -363,14 +360,12 @@ async def admin_send_sign_handle(m: types.Message):
         else:
             await m.reply("Отправьте текст или фото.")
             return
-        # Можно пометить заказ выполненным
         orders[idx]['done'] = True
         save_data()
     except Exception as e:
         await m.reply(f"Ошибка при отправке пользователю: {e}")
 
     sending_signs.pop(admin_id)
-    # Вернуть в список заказов
     await send_admin_orders_list(admin_id)
 
 # --- Запуск проверки оплаты в фоне ---
