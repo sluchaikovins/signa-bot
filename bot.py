@@ -215,7 +215,17 @@ async def ask_payment(uid, amount):
         f'<a href="{donate_url}">DonatePay</a>\n'
         f"Комментарий: {code}\n⏳ 10 мин"
     )
-    await bot.send_message(uid, text, reply_markup=kb, parse_mode='HTML')
+    await bot.send_message(
+    uid,
+    f"💸 Оплатите <b>{amount}₽</b> на платформу:\n\n"
+    f"<a href='https://new.donatepay.ru/@1035808'>DonatePay</a>\n\n"
+    f"📝 В комментарий к донату обязательно вставьте этот уникальный код: ⚠️ <b>{code}</b> ⚠️\n\n"
+    f"⏳ На оплату дается 10 минут. После 10 минут заявка будет сброшена.\n"
+    f"⏰ Я буду автоматически проверять оплату каждые 30 секунд.",
+    parse_mode='HTML'
+)
+
+
 
 @dp.callback_query_handler(lambda c: c.data == 'confirm_manual')
 async def manual_confirm(c: types.CallbackQuery):
